@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { signUp } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
-export default function SignupPage() {
+function SignupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const success = searchParams.get('success');
+  const emailFromQuery = searchParams.get('email');
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +52,7 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccess(true);
+      router.push(`/signup?success=true&email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
@@ -61,22 +66,12 @@ export default function SignupPage() {
           <CardHeader>
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription>
-              We&apos;ve sent a verification link to <strong>{email}</strong>
+              We&apos;ve sent a verification link to <strong>{emailFromQuery}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Click the link in the email to verify your account and complete the signup process.
-            </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Didn&apos;t receive the email? Check your spam folder or{' '}
-              <button
-                onClick={() => setSuccess(false)}
-                className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline"
-              >
-                try again
-              </button>
-              .
             </p>
           </CardContent>
           <CardFooter>
@@ -170,5 +165,13 @@ export default function SignupPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   );
 }
