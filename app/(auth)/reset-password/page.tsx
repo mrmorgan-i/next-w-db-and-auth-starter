@@ -42,6 +42,7 @@ export default function ResetPasswordPage() {
     try {
       await resetPassword({
         newPassword: password,
+        token,
       });
 
       router.push('/login');
